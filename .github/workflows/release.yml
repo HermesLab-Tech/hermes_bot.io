@@ -25,16 +25,10 @@ jobs:
         id: image-meta
         uses: docker/metadata-action@v5
         with:
-          images: baptistearno/typebot-${{ matrix.app }}
+          images: ghcr.io/hermeslab-tech/hermes-bot-${{ matrix.app }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
@@ -54,7 +48,7 @@ jobs:
           cache-to: type=gha,scope=${{ matrix.app }}-amd,mode=max
           build-args: |
             SCOPE=${{ matrix.app }}
-          outputs: type=image,"name=baptistearno/typebot-${{ matrix.app }},ghcr.io/hermeslab-tech/hermes-bot-${{ matrix.app }}",push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,name=ghcr.io/hermeslab-tech/hermes-bot-${{ matrix.app }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digest
         run: |
@@ -85,7 +79,7 @@ jobs:
         id: image-meta
         uses: docker/metadata-action@v5
         with:
-          images: baptistearno/typebot-${{ matrix.app }}
+          images: ghcr.io/hermeslab-tech/hermes-bot-${{ matrix.app }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -93,12 +87,6 @@ jobs:
         with:
           version: latest
           driver-opts: image=moby/buildkit:master
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
@@ -118,7 +106,7 @@ jobs:
           cache-to: type=gha,scope=${{ matrix.app }}-arm,mode=max
           build-args: |
             SCOPE=${{ matrix.app }}
-          outputs: type=image,"name=baptistearno/typebot-${{ matrix.app }},ghcr.io/hermeslab-tech/hermes-bot-${{ matrix.app }}",push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,name=ghcr.io/hermeslab-tech/hermes-bot-${{ matrix.app }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digest
         run: |
@@ -160,20 +148,13 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: |
-            baptistearno/typebot-${{ matrix.app }}
-            ghcr.io/hermeslab-tech/hermes-bot-${{ matrix.app }}
+          images: ghcr.io/hermeslab-tech/hermes-bot-${{ matrix.app }}
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
             next
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -184,7 +165,7 @@ jobs:
         working-directory: /tmp/digests/${{ matrix.app }}
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf 'baptistearno/typebot-${{ matrix.app }}@sha256:%s ' *)
+            $(printf 'ghcr.io/hermeslab-tech/hermes-bot-${{ matrix.app }}@sha256:%s ' *)
       - name: Inspect image
         run: |
           docker buildx imagetools inspect ghcr.io/hermeslab-tech/hermes-bot-${{ matrix.app }}:${{ steps.meta.outputs.version }}
