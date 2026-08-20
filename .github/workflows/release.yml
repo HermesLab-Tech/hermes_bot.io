@@ -7,6 +7,7 @@ on:
 permissions:
   contents: read
   actions: write
+  packages: write
 
 jobs:
   build-amd:
@@ -35,6 +36,13 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build image
         id: docker_build
         uses: docker/build-push-action@v6
@@ -46,7 +54,7 @@ jobs:
           cache-to: type=gha,scope=${{ matrix.app }}-amd,mode=max
           build-args: |
             SCOPE=${{ matrix.app }}
-          outputs: type=image,name=baptistearno/typebot-${{ matrix.app }},push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,"name=baptistearno/typebot-${{ matrix.app }},ghcr.io/hermeslab-tech/hermes-bot-${{ matrix.app }}",push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digest
         run: |
@@ -92,6 +100,13 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build image
         id: docker_build
         uses: docker/build-push-action@v6
@@ -103,7 +118,7 @@ jobs:
           cache-to: type=gha,scope=${{ matrix.app }}-arm,mode=max
           build-args: |
             SCOPE=${{ matrix.app }}
-          outputs: type=image,name=baptistearno/typebot-${{ matrix.app }},push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,"name=baptistearno/typebot-${{ matrix.app }},ghcr.io/hermeslab-tech/hermes-bot-${{ matrix.app }}",push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digest
         run: |
@@ -145,7 +160,9 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: baptistearno/typebot-${{ matrix.app }}
+          images: |
+            baptistearno/typebot-${{ matrix.app }}
+            ghcr.io/hermeslab-tech/hermes-bot-${{ matrix.app }}
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
@@ -157,6 +174,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Create manifest list and push
         working-directory: /tmp/digests/${{ matrix.app }}
         run: |
@@ -164,7 +187,7 @@ jobs:
             $(printf 'baptistearno/typebot-${{ matrix.app }}@sha256:%s ' *)
       - name: Inspect image
         run: |
-          docker buildx imagetools inspect baptistearno/typebot-${{ matrix.app }}:${{ steps.meta.outputs.version }}
+          docker buildx imagetools inspect ghcr.io/hermeslab-tech/hermes-bot-${{ matrix.app }}:${{ steps.meta.outputs.version }}
 
   create-release:
     name: Create Release
